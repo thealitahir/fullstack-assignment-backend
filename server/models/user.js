@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 var env = process.env.NODE_ENV || "development";
 var config = require(__dirname + "/../config/config.js")[env];
 var secret = config.secret;
+const bcrypt = require("bcrypt");
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
@@ -63,12 +64,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
   User.prototype.authenticate = function authenticate(value) {
-    console.log(value,this.password);
-    if (value == this.password) return this;
+    if (bcrypt.compareSync(value, this.password)) return this;
     else return false;
   };
-  User.associate = function(models) {
-  };
+  User.associate = function(models) {};
   User.prototype.generateJwtToken = function generateJwtToken() {
     console.log("generate jwt", secret);
     return jwt.sign({ email: this.email, id: this.id }, secret);

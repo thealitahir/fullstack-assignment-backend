@@ -1,4 +1,5 @@
 var params = { tableName: "User", body: {} };
+const bcrypt = require("bcrypt");
 
 login = (req, res) => {
   console.log("in login");
@@ -24,6 +25,8 @@ login = (req, res) => {
       );
     } else {
       if (user.authenticate(password)) {
+        console.log(">>>>>>>>>>>>>>>>>>");
+        console.log(password);
         return res.status(200).send({
           success: true,
           data: user,
@@ -39,8 +42,8 @@ login = (req, res) => {
   });
 };
 
-signup = (req, res) => {
-  console.log("in signup", req.body);
+signup = async (req, res) => {
+  console.log("in signup");
   req
     .checkBody("email", "Enter a valid email address.")
     .isEmail()
@@ -60,14 +63,17 @@ signup = (req, res) => {
   req
     .checkBody("password", "Password should be at least 6 chars long.")
     .isLength({ min: 6 });
+  const salt = await bcrypt.genSalt(10);
   params.body = {
     first_name: req.body.first_name,
     last_name: req.body.last_name,
     password: req.body.password,
-    // password: bcrypt.hashSync(req.body.password, salt, null),
-    email: req.body.email
+    password: bcrypt.hashSync(req.body.password, salt, null),
+    email: req.body.email,
+    address: req.body.address,
+    gender: req.body.gender
   };
-
+  console.log(params.body);
   return req.db.create(req, res, params);
 };
 module.exports = {
